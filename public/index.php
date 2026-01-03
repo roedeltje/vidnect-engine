@@ -4,42 +4,78 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/app/Bootstrap.php';
 
+use App\Http\Response;
 use App\Http\Router;
+use App\Support\DB;
+use App\Support\Health;
+use App\Repositories\RoomRepository;
+use App\Handlers\V1\RoomsHandler;
 
 $router = new Router();
 
 /**
- * Routes
+ * Root health (non-versioned)
  */
-$router->get('/health', function () {
-    $payload = App\Support\Health::check();
+$router->get('/health', function (): void {
+    $payload = Health::check();
     $dbOk = ($payload['checks']['db'] ?? null) === 'pass';
     $statusCode = $dbOk ? 200 : 503;
 
-    App\Http\Response::ok($payload, $statusCode);
+    Response::ok($payload, $statusCode);
 });
 
-// API v1
-$router->group('/v1', function ($router) {
-    $router->get('/health', function () {
-        $payload = App\Support\Health::check();
+/**
+ * API v1
+ */
+$router->group('/v1', function (Router $router): void {
+
+    $router->get('/health', function (): void {
+        $payload = Health::check();
         $dbOk = ($payload['checks']['db'] ?? null) === 'pass';
         $statusCode = $dbOk ? 200 : 503;
 
-        // Optioneel: kleine v1 “meta” wrapper (nu alvast future-proof)
-        App\Http\Response::ok([
+        Response::ok([
             'api_version' => 'v1',
-            'health' => $payload,
+            'health'      => $payload,
         ], $statusCode);
+    });
+
+    $router->post('/rooms', function (): void {
+        $handler = new RoomsHandler(new RoomRepository(DB::pdo()));
+        $handler->create();
+    });
+
+    $router->get('/rooms/{id}', function (string $id): void {
+        $handler = new RoomsHandler(new RoomRepository(DB::pdo()));
+        $handler->show($id);
     });
 });
 
-$router->get('/', function () {
+/**
+ * Root landing (simple HTML)
+ */
+$router->get('/', function (): void {
     http_response_code(200);
     header('Content-Type: text/html; charset=utf-8');
-    echo '<!doctype html><html><head><meta charset="utf-8"><title>VidNect Engine</title></head>
-          <body style="font-family:system-ui;margin:40px">
-          <h1>VidNect Engine</h1><p>Engine is online.</p></body></html>';
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+
+    echo '<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VidNect Engine</title>
+</head>
+<body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:40px;line-height:1.5">
+  <h1 style="margin:0 0 10px">VidNect Engine</h1>
+  <p style="margin:0 0 16px">Engine is online.</p>
+  <ul style="margin:0;padding-left:18px">
+    <li><a href="/health">/health</a></li>
+    <li><a href="/v1/health">/v1/health</a></li>
+  </ul>
+</body>
+</html>';
 });
 
 $router->dispatch();

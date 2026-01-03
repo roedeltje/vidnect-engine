@@ -1,5 +1,6 @@
 # Secrets
 .env
+docs
 
 # Runtime storage
 storage/logs/*
