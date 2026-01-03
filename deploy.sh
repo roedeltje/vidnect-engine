@@ -6,16 +6,18 @@ echo " VidNect Engine deploy"
 echo "==============================="
 
 BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$BASE_DIR"
+REPO_USER="$(stat -c '%U' "$BASE_DIR/.git")"
 
 echo
-echo "→ Pulling latest code from git..."
-git pull
+echo "→ Repo dir: $BASE_DIR"
+echo "→ Git pull as user: $REPO_USER"
+
+sudo -u "$REPO_USER" bash -lc "cd '$BASE_DIR' && git pull"
 
 echo
 echo "→ Fixing permissions on storage/..."
-sudo chown -R www-data:www-data storage
-sudo chmod -R 775 storage
+sudo chown -R www-data:www-data "$BASE_DIR/storage"
+sudo chmod -R 775 "$BASE_DIR/storage"
 
 echo
 echo "→ Reloading Apache..."
