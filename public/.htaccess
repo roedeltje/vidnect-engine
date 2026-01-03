@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Voorkom directory listing
+Options -Indexes
+
+# Alles wat geen bestaand bestand/map is -> index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
+

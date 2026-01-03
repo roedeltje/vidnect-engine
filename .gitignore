@@ -1,0 +1,11 @@
+# Secrets
+.env
+
+# Runtime storage
+storage/logs/*
+storage/cache/*
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
