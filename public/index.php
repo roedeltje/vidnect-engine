@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 require dirname(__DIR__) . '/app/Bootstrap.php';
@@ -12,11 +13,25 @@ $router = new Router();
  */
 $router->get('/health', function () {
     $payload = App\Support\Health::check();
-
     $dbOk = ($payload['checks']['db'] ?? null) === 'pass';
     $statusCode = $dbOk ? 200 : 503;
 
     App\Http\Response::ok($payload, $statusCode);
+});
+
+// API v1
+$router->group('/v1', function ($router) {
+    $router->get('/health', function () {
+        $payload = App\Support\Health::check();
+        $dbOk = ($payload['checks']['db'] ?? null) === 'pass';
+        $statusCode = $dbOk ? 200 : 503;
+
+        // Optioneel: kleine v1 “meta” wrapper (nu alvast future-proof)
+        App\Http\Response::ok([
+            'api_version' => 'v1',
+            'health' => $payload,
+        ], $statusCode);
+    });
 });
 
 $router->get('/', function () {
