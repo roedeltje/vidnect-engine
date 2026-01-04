@@ -45,9 +45,19 @@ $router->group('/v1', function (Router $router): void {
         $handler->create();
     });
 
+    $router->get('/rooms', function (): void {
+        $handler = new RoomsHandler(new RoomRepository(DB::pdo()));
+        $handler->index();
+    });
+
     $router->get('/rooms/{id}', function (string $id): void {
         $handler = new RoomsHandler(new RoomRepository(DB::pdo()));
         $handler->show($id);
+    });
+
+    $router->post('/rooms/{id}/close', function (string $id): void {
+        $handler = new RoomsHandler(new RoomRepository(DB::pdo()));
+        $handler->close($id);
     });
 });
 
