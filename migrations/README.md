@@ -35,6 +35,7 @@ Deze map bevat SQL migrations voor de VidNect Engine database.
 |-----|-----------------------------|----------------------------------------------|
 | 001 | 001_rooms.sql               | Init rooms tabel (room_id, name, timestamps) |
 | 002 | 002_rooms_soft_close.sql    | Room lifecycle: status + closed_at           |
+| 003 | 003_room_tokens.sql | Stateful tokens: room_tokens table (hash + expiry)   |
 
 ## Applied log
 
