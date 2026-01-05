@@ -9,7 +9,9 @@ use App\Http\Router;
 use App\Support\DB;
 use App\Support\Health;
 use App\Repositories\RoomRepository;
+use App\Repositories\RoomTokenRepository;
 use App\Handlers\V1\RoomsHandler;
+use App\Handlers\V1\TokensHandler;
 
 $router = new Router();
 
@@ -58,6 +60,14 @@ $router->group('/v1', function (Router $router): void {
     $router->post('/rooms/{id}/close', function (string $id): void {
         $handler = new RoomsHandler(new RoomRepository(DB::pdo()));
         $handler->close($id);
+    });
+
+    $router->post('/rooms/{id}/tokens', function (string $id): void {
+        $handler = new TokensHandler(
+            new RoomRepository(DB::pdo()),
+            new RoomTokenRepository(DB::pdo())
+        );
+        $handler->createForRoom($id);
     });
 });
 
